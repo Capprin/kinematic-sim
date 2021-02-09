@@ -3,28 +3,21 @@
 # this will probably come back to bite me
 
 import numpy as np
+from scipy.linalg import expm
 
 # TODO: add tests if you gotta
 class Transform:
 
-  def __init__(self, is_velocity, mat = None, pos=np.array([0.,0.,0.]), rot=np.array([0.,0.,0.])):
+  def __init__(self, is_velocity, pos=np.array([0.,0.,0.]), rot=np.array([0.,0.,0.])):
     self._is_velocity = is_velocity
-
-    # populate matrix
-    if mat is not None and not is_velocity:
-      # use provided matrix
-      self.matrix = mat # not type safe
-      self.displace(np.identity(4)) #hacky (but valid) way to set _pos, _rot
+    rot_mat = None
+    if is_velocity:
+      rot_mat = Transform.inst_rot_mat_3d(rot)
     else:
-      # use vectors
-      rot_mat = None
-      if is_velocity:
-        rot_mat = Transform.inst_rot_mat_3d(rot)
-      else:
-        rot_mat = Transform.rot_mat_3d(rot)
-      self.matrix = np.block([[rot_mat, pos],[0., 0., 0., (float)(not self._is_velocity)]])
-      self._pos = pos
-      self._rot = rot
+      rot_mat = Transform.rot_mat_3d(rot)
+    self.matrix = np.block([[rot_mat, pos],[0., 0., 0., (float)(not self._is_velocity)]])
+    self._pos = pos
+    self._rot = rot
 
   # displace this transform by another transform
   def displace(self, other):
@@ -33,6 +26,14 @@ class Transform:
     self.matrix = self.matrix @ other.matrix
     self._pos = self.matrix[:2,3]
     self._rot = Transform.rot_vec(self.matrix[:2,:2])
+
+  # integrate myself (if velocity) over time, producing a position transform
+  def flow(self, time):
+    if self._is_velocity:
+      res = Transform(is_velocity=False) #produces identity
+      return res.displace(expm(time * self.matrix))
+    else:
+      raise Exception("Transform: position flows are nonsensical")
 
   ### getters and setters (use these) ###
   def get_pos(self):
