@@ -27,6 +27,8 @@ class Transform:
     self._pos = self.matrix[:2,3]
     self._rot = Transform.rot_vec(self.matrix[:2,:2])
 
+  # TODO: maybe add an inverse (subtraction?) method
+
   # integrate myself (if velocity) over time, producing a position transform
   def flow(self, time):
     if self._is_velocity:
