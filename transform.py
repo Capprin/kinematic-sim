@@ -7,17 +7,26 @@ import numpy as np
 # TODO: add tests if you gotta
 class Transform:
 
-  def __init__(self, is_velocity, pos=np.array([0.,0.,0.]), rot=np.array([0.,0.,0.])):
+  def __init__(self, is_velocity, mat = None, pos=np.array([0.,0.,0.]), rot=np.array([0.,0.,0.])):
     self._is_velocity = is_velocity
-    rot_mat = None
-    if is_velocity:
-      rot_mat = Transform.inst_rot_mat_3d(rot)
+
+    # populate matrix
+    if mat is not None and not is_velocity:
+      # use provided matrix
+      self.matrix = mat # not type safe
+      self.displace(np.identity(4)) #hacky (but valid) way to set _pos, _rot
     else:
-      rot_mat = Transform.rot_mat_3d(rot)
-    self.matrix = np.block([[rot_mat, pos],[0., 0., 0., (float)(not self._is_velocity)]])
-    self._pos = pos
-    self._rot = rot
-  
+      # use vectors
+      rot_mat = None
+      if is_velocity:
+        rot_mat = Transform.inst_rot_mat_3d(rot)
+      else:
+        rot_mat = Transform.rot_mat_3d(rot)
+      self.matrix = np.block([[rot_mat, pos],[0., 0., 0., (float)(not self._is_velocity)]])
+      self._pos = pos
+      self._rot = rot
+
+  # displace this transform by another transform
   def displace(self, other):
     if self._is_velocity:
       raise Exception("Transform: don't multiply velocities; it causes problems")
@@ -25,6 +34,7 @@ class Transform:
     self._pos = self.matrix[:2,3]
     self._rot = Transform.rot_vec(self.matrix[:2,:2])
 
+  ### getters and setters (use these) ###
   def get_pos(self):
     return self._pos
 
@@ -39,6 +49,7 @@ class Transform:
     self.matrix[:2,:2] = Transform.rot_mat_3d(rot)
     self._rot = rot
 
+  ### static helper methods ###
   @staticmethod
   # produces a 2D rotation matrix
   def rot_mat_2d(axis, theta):
@@ -83,4 +94,3 @@ class Transform:
       else:
         rot[1] = -np.pi/2
         rot[0] = -rot[2] + np.arctan2(rot_mat[0,1], rot_mat[0,2])
-
