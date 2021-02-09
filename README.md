@@ -1,4 +1,4 @@
-# KinematicSim
+# kinematic-sim
 
 This is a kinematic simulator. Its biggest strengths are that the underlying
 position and velocity representations are robust, and this implementation is
