@@ -15,7 +15,7 @@ class Transform:
       rot_mat = Transform.inst_rot_mat_3d(rot)
     else:
       rot_mat = Transform.rot_mat_3d(rot)
-    self.matrix = np.block([[rot_mat, pos],[0., 0., 0., (float)(not self._is_velocity)]])
+    self.matrix = np.block([[rot_mat, pos],[0., 0., 0., float(not self._is_velocity)]])
     self._pos = pos
     self._rot = rot
 
