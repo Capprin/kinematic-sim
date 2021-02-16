@@ -7,6 +7,7 @@
     # need equivalent starting conditions, etc
 
 import argparse
+import animator as anim
 from time import time, time_ns
 from tqdm import tqdm
 import yaml
@@ -19,7 +20,12 @@ from randomthing import RandomThing
 THINGS = [Thing, RandomThing]
 
 # run a simulation
-def simulate(things, max_time_s, speed=1.0):
+def simulate(things, max_time_s, speed=1.0, animate=True):
+  # set up animation, draw initial state
+  if animate:
+    fig, axes = anim.init()
+    anim.update(axes, things)
+
   # keep track of time
   start_s = time()
   start_ns = time_ns()
@@ -42,11 +48,18 @@ def simulate(things, max_time_s, speed=1.0):
         done = True
         break
       exit_vote += int(thing.vote_exit)
+    # draw updates
+    if animate:
+      anim.update(axes, things)
     progress.update(speed*(time()-elapsed_s))
     elapsed_s = speed*(time() - start_s)
     if exit_vote >= len(things):
       done = True
   progress.close()
+
+  # display simulation results
+  if animate:
+    anim.end()
 
   # output metrics
   metrics = dict()
@@ -76,11 +89,12 @@ if __name__=="__main__":
   parser.add_argument('-t', '--time', default=60, type=int, help='Simulation time in seconds (default 60s)')
   parser.add_argument('-s', '--speed', default=1., type=float, help='Simulation speed multiplier (default 1.0f)')
   parser.add_argument('-o', '--output', type=str, help='Output file. If unspecified, output written to console')
+  parser.add_argument('-a', '--animate', default=False, action='store_true', help='Run with animation')
   args = parser.parse_args()
   with open(args.config,'r') as yf:
     things = read_things(yf)
   print('Running simulation...')
-  res = simulate(things, args.time, args.speed)
+  res = simulate(things, args.time, args.speed, args.animate)
   print('Done.')
   if args.output is not None:
     with open(args.output, 'w') as of:
