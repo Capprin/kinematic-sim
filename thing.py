@@ -14,16 +14,18 @@ from numpy.linalg import norm
 
 class Thing:
 
+  NAME = 'thing'
+
   def __init__(self, trans=[0]*6, vel=[0]*6, radius=0.25):
-    # cosmetics (also for identification, grouping)
-    self.name='thing'
     # set spatial member vars
-    self.position = Transform(is_velocity=False, pos=trans[:2], rot=trans[3:5])
-    self.velocity = Transform(is_velocity=True, pos=vel[:2], rot=vel[3:5])
+    self.position = Transform(is_velocity=False, pos=trans[:3], rot=trans[3:])
+    self.velocity = Transform(is_velocity=True, pos=vel[:3], rot=vel[3:])
     self.radius = 0.25
     # set simulation parameters
     self.vote_exit = False
     self.force_exit = False
+    # metrics; add to this for output
+    self.metrics = dict()
 
   # update myself in the world. all other things are passed, for convenience
   # this should be extended!
@@ -33,3 +35,14 @@ class Thing:
   # test for collision
   def is_colliding(self, other):
     return norm(self.position.get_pos() - other.position.get_pos()) < self.radius + other.radius
+
+  # return an instance of myself from a dictionary
+  # subclass for more specific behavior
+  @staticmethod
+  def from_dict(properties):
+    if properties is None:
+      return Thing()
+    trans = properties['trans'] if 'trans' in properties else [0]*6
+    vel = properties['vel'] if 'vel' in properties else [0]*6
+    rad = properties['rad'] if 'rad' in properties else 0.25
+    return Thing(trans, vel, rad)
