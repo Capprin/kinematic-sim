@@ -10,6 +10,13 @@ This is the workhorse of the simulator. It contains the loop that does a single
 "run" of simulated bodies, including precise timing. It also has convenience
 functions for loading simulation parameters from YAML, as well as a CLI.
 
+CLI parameters:
+- `config`: Input config YAML file, defining simulated Things
+- `time`: Total simulation execution time, in seconds
+- `speed`: Simulation speed; a speed of 2, for example, makes the simulation
+twice as fast.
+- `output`: Output file, where metrics may be written
+
 ## thing.py (Thing Class)
 The Thing class is the representation of bodies. All objects in the simulator
 are represented by "thing" objects. This class should be subclassed to create
@@ -27,12 +34,18 @@ have the effects that you think.
 - `vote_exit`: Boolean. The simulator automatically exits when all things agree
 that it should.
 - `force_exit`: Boolean. Any thing can force the simulation to end immediately.
+- `metrics`: Dict. Anything saved as a "metric" will be output at the end of
+the simulation.
 
 The member functions are:
 - `update(delta, others)`: Called every frame. Includes the time since this
 thing last excecuted, as well as all other things in the world to operate on.
 > You should be putting most of your code in the update function for subclasses.
-- `is_colliding(other)`: Convenience function for collision testing
+- `is_colliding(other)`: Convenience function for collision 
+- `from_dict(properties)`: A static method to instantiate a Thing of this type
+from a dictionary (effectively, YAML configuration).
+> Don't forget to implement `from_dict` when subclassing Thing. In addition,
+ensure that your subclass is recorded in `simulate.py`'s THINGS member list.
 
 ## transform.py (Transform Class)
 The Transform class is the backbone of the simulated kinematics. Formally, it's
