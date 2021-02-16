@@ -45,7 +45,7 @@ thing last excecuted, as well as all other things in the world to operate on.
 - `from_dict(properties)`: A static method to instantiate a Thing of this type
 from a dictionary (effectively, YAML configuration).
 > Don't forget to implement `from_dict` when subclassing Thing. In addition,
-ensure that your subclass is recorded in `simulate.py`'s THINGS member list.
+ensure that your subclass is recorded in `simulate.py`'s `THINGS` member list.
 
 ## transform.py (Transform Class)
 The Transform class is the backbone of the simulated kinematics. Formally, it's
