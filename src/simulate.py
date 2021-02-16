@@ -27,7 +27,6 @@ def simulate(things, max_time_s, speed=1.0):
   elapsed_ns = [0]*len(things) #ea. thing gets its own delta
 
   # simulator loop
-  # TODO: fix time dilation in output
   done = False
   progress = tqdm(desc='Simulation Progress', total=max_time_s)
   while elapsed_s < max_time_s and not done:
