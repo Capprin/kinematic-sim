@@ -23,7 +23,7 @@ THINGS = [Thing, RandomThing]
 def simulate(things, max_time_s, speed=1.0, animate=True):
   # set up animation, draw initial state
   if animate:
-    fig, axes = anim.init()
+    axes = anim.init()
     anim.update(axes, things)
 
   # keep track of time
