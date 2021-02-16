@@ -22,7 +22,7 @@ THINGS = [Thing, RandomThing]
 def simulate(things, max_time_s, speed=1.0):
   # keep track of time
   start_s = time()
-  start_ns = time()
+  start_ns = time_ns()
   elapsed_s = 0
   elapsed_ns = [0]*len(things) #ea. thing gets its own delta
 
@@ -34,7 +34,7 @@ def simulate(things, max_time_s, speed=1.0):
     # update each thing
     for i,thing in enumerate(things):
       # pass time since last update for each
-      delta = speed*(time_ns() - elapsed_ns[i])
+      delta = speed*(time_ns() - start_ns - elapsed_ns[i])*10**(-9)
       thing.update(delta, things)
       elapsed_ns[i] = time_ns() - start_ns
       # check for exit
