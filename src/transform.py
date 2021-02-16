@@ -5,10 +5,14 @@
 import numpy as np
 from scipy.linalg import expm
 
-# TODO: add tests if you gotta
 class Transform:
 
-  def __init__(self, is_velocity, pos=np.array([0.,0.,0.]), rot=np.array([0.,0.,0.])):
+  # static directions for simplicity
+  FORWARD = np.array([1., 0., 0.])
+  LEFT = np.array([0., 1., 0.])
+  UP = np.array([0., 0., 1.])
+
+  def __init__(self, is_velocity=False, pos=np.array([0.,0.,0.]), rot=np.array([0.,0.,0.])):
     self._is_velocity = is_velocity
     rot_mat = None
     if is_velocity:
@@ -104,3 +108,31 @@ class Transform:
       else:
         rot[1] = -np.pi/2
         rot[0] = -rot[2] + np.arctan2(rot_mat[0,1], rot_mat[0,2])
+    return rot
+
+# unit "tests"
+if __name__=='__main__':
+  print("PLANAR CONFIGURATION")
+  subj = Transform()
+  print("Identity configuration: " + str(subj._pos) + '; ' + str(subj._rot))
+  rot90 = Transform(rot=[0.,0.,np.pi/2])
+  subj.displace(rot90)
+  print("Rotated by 90: " + str(subj._pos) + '; ' + str(subj._rot))
+  move1x = Transform(pos=[1., 0., 0.])
+  subj.displace(move1x)
+  print("Translation by 1 in X (forward): " + str(subj._pos) + '; ' + str(subj._rot))
+  print("PLANAR VELOCITY")
+  vel = Transform(is_velocity=True)
+  print("Velocity identity configuration: " + str(vel._pos) + '; ' + str(vel._rot))
+  vel.set_pos([1., 0., 0.])
+  print("Velocity of 1 Forward: " + str(vel._pos) + '; ' + str(vel._rot))
+  res = vel.flow(1)
+  print("Result of 1s flow: " + str(res._pos) + "; " + str(subj._rot))
+  res.displace(vel.flow(1))
+  print("Result of 2s flow: " + str(res._pos) + "; " + str(subj._rot))
+  print("3D CONFIGURATION")
+  subj = Transform()
+  subj.displace(Transform(rot=[0., np.pi/4, np.pi/4]))
+  print("2D Rotation: " + str(subj._pos) + '; ' + str(subj._rot))
+  subj.displace(vel.flow(1))
+  print("Velocity flow forward: " + str(subj._pos) + '; ' + str(subj._rot))
