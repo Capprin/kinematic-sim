@@ -13,9 +13,10 @@ import yaml
 
 # things
 from thing import Thing
+from randomthing import RandomThing
 
 # keep track of all types of things here
-THINGS = {Thing.NAME:Thing}
+THINGS = [Thing, RandomThing]
 
 # run a simulation
 def simulate(things, max_time_s, speed=1.0):
@@ -52,7 +53,7 @@ def simulate(things, max_time_s, speed=1.0):
   metrics = dict()
   for i, thing in enumerate(things):
     if thing.metrics:
-      metrics[str(i) + thing.NAME] = thing.metrics
+      metrics[thing.name] = thing.metrics
   return metrics
 
 # read supplied things yaml (stream, string, or file), returning thing list
@@ -63,9 +64,11 @@ def read_things(yaml_in):
   # est. config as list of things (with properties)
   for conf_name, conf_properties in thing_dict.items():
     # identify thing based on name
-    for thing_name, thing_class in THINGS.items():
-      if thing_name in conf_name:
-        thing_list.append(thing_class.from_dict(conf_properties))
+    for thing_class in THINGS:
+      if thing_class.NAME in conf_name:
+        inst = thing_class.from_dict(conf_properties)
+        inst.name = conf_name
+        thing_list.append(inst)
   return thing_list
 
 if __name__=="__main__":
@@ -79,9 +82,10 @@ if __name__=="__main__":
     things = read_things(yf)
   print('Running simulation...')
   res = simulate(things, args.time, args.speed)
+  print('Done.')
   if args.output is not None:
     with open(args.output, 'w') as of:
-      yaml.dump(res, of)
+      yaml.dump(res, of, default_flow_style=None)
   else:
     print('Returned Metrics:')
     print(res)

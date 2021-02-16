@@ -12,11 +12,14 @@
 from transform import Transform
 from numpy.linalg import norm
 
-class Thing:
+class Thing(object):
 
+  # static name, for type indexing
   NAME = 'thing'
 
   def __init__(self, trans=[0]*6, vel=[0]*6, radius=0.25):
+    # cosmetic name, specific to this instance
+    self.name = ''
     # set spatial member vars
     self.position = Transform(is_velocity=False, pos=trans[:3], rot=trans[3:])
     self.velocity = Transform(is_velocity=True, pos=vel[:3], rot=vel[3:])
