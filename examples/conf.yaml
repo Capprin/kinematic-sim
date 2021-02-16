@@ -1,0 +1,11 @@
+thing0: ~ #empty thing (uses default params)
+# things must include the static member NAME in their key
+thing1:
+  pos: [0, 0, 0, 0, 0, 0]
+  vel: [0, 0, 0, 0, 0, 0]
+  rad: 0.25
+# thing keys are preserved in output
+# fields change with type
+random0:
+  minTrans: [0, 0, 0]
+  maxTrans: [10, 10, 10]
