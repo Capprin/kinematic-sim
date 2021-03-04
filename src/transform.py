@@ -12,8 +12,10 @@ class Transform:
   LEFT = np.array([0., 1., 0.])
   UP = np.array([0., 0., 1.])
 
-  def __init__(self, is_velocity=False, pos=np.array([0.,0.,0.]), rot=np.array([0.,0.,0.])):
-    self._is_velocity = is_velocity
+  def __init__(self, is_velocity=False,
+                     pos=np.array([0.,0.,0.]),
+                     rot=np.array([0.,0.,0.]),
+                     coupled=False):
     rot_mat = None
     if is_velocity:
       rot_mat = Transform.inst_rot_mat_3d(rot)
@@ -21,9 +23,11 @@ class Transform:
       rot_mat = Transform.rot_mat_3d(rot)
     # block is a pain; 1Darrays are dimensionless, so need to make it 2D and transpose
     self.matrix = np.block([[rot_mat, np.array([pos]).T],
-                            [0., 0., 0., float(not self._is_velocity)]])
+                            [0., 0., 0., float(not is_velocity)]])
+    self._is_velocity = is_velocity
     self._pos = pos
     self._rot = rot
+    self._coupled = coupled
 
   # displace this transform by another transform
   def displace(self, other):
@@ -38,13 +42,18 @@ class Transform:
   # integrate myself (if velocity) over time, producing a position transform
   def flow(self, time):
     if self._is_velocity:
-      # wrap exponential in a transform
-      res = Transform(is_velocity=False)
-      res.matrix = expm(time * self.matrix)
-      # set vectors
-      res._pos = res.matrix[:3,3]
-      res._rot = Transform.rot_vec(res.matrix[:3,:3])
-      return res
+      # coupled position, rotation implies exponential integrator
+      if self._coupled:
+        # wrap exponential in a transform
+        res = Transform(is_velocity=False)
+        res.matrix = expm(time * self.matrix)
+        # set vectors
+        res._pos = res.matrix[:3,3]
+        res._rot = Transform.rot_vec(res.matrix[:3,:3])
+        return res
+      else:
+        # uncoupled position, rotation; use euclidean integrator
+        return Transform(pos=np.array(self._pos)*time, rot=np.array(self._rot)*time)
     else:
       raise Exception("Transform: position flows are nonsensical")
 
