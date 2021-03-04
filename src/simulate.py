@@ -15,9 +15,10 @@ import yaml
 # things
 from thing import Thing
 from randomthing import RandomThing
+from obstaclething import ObstacleThing
 
 # keep track of all types of things here
-THINGS = [Thing, RandomThing]
+THINGS = [Thing, RandomThing, ObstacleThing]
 
 # run a simulation
 def simulate(things, max_time_s, speed=1.0, animate=True):
