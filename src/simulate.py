@@ -15,15 +15,16 @@ import yaml
 # things
 from thing import Thing
 from randomthing import RandomThing
+from obstaclething import ObstacleThing
 
 # keep track of all types of things here
-THINGS = [Thing, RandomThing]
+THINGS = [Thing, RandomThing, ObstacleThing]
 
 # run a simulation
 def simulate(things, max_time_s, speed=1.0, animate=True):
   # set up animation, draw initial state
   if animate:
-    fig, axes = anim.init()
+    axes = anim.init()
     anim.update(axes, things)
 
   # keep track of time
