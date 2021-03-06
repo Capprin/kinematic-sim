@@ -37,7 +37,20 @@ class Transform:
     self._pos = self.matrix[:3,3]
     self._rot = Transform.rot_vec(self.matrix[:3,:3])
 
-  # TODO: maybe add an inverse (subtraction?) method
+  # gets displacement between myself and another transform
+  # can be thought of as:
+      # treating myself as the origin, and the other as a point, or
+      # the right action that would myself to the other
+  def displacement_to(self, other):
+    disp_mat = np.linalg.inv(self.matrix) @ other.matrix
+    res = Transform(is_velocity=self._is_velocity)
+    res.matrix = disp_mat
+    res._pos = disp_mat[:3,3]
+    if self._is_velocity:
+      res._rot = np.array([disp_mat[2,1], disp_mat[0,2], disp_mat[1,0]])
+    else:
+      res._rot = Transform.rot_vec(disp_mat[:3,:3])
+    return res
 
   # integrate myself (if velocity) over time, producing a position transform
   def flow(self, time):
