@@ -2,6 +2,7 @@
 # priority queue RRT implementation
 
 import numpy as np
+from time import time_ns
 from thing import Thing
 from randomthing import RandomThing
 from transform import Transform
@@ -10,44 +11,66 @@ class RRTThing(RandomThing):
 
   NAME = 'rrt'
 
-  # TODO: this only supports one goal; add support for a _specific_ goal
-
-  def __init__(self, minTrans=[0]*3, maxTrans=[10, 10, 0], vel=[0]*6, radius=0.25,
-               max_iterations=100):
+  def __init__(self, goal, minTrans=[0]*3, maxTrans=[10, 10, 0], 
+               vel=Transform.FORWARD, radius=0.25, max_iterations=100):
     # do standard initialization
     super().__init__(minTrans, maxTrans, vel, radius)
-    
-    
+    # save relevant RRT data
+    self.goal = goal
+    self.step_length = radius
+    self.bounds = (minTrans, maxTrans)
+    self.max_iterations = max_iterations
+    self.step = 0
+    self.first_update = True
 
   def update(self, delta, others):
-    # TODO: build RRT tree on first iteration; save path
-    # TODO: report as metrics:
-        # planned path (or failure to plan path)
-            # could also include length
-        # initialization time
-
-    # keep track of position along path
+    # build RRT tree on first iteration; save path and metrics
+    if self.first_update:
+      start_ns = time_ns()
+      self.path = self.build_rrt_tree(others)
+      init_time_s = (time_ns() - start_ns)*10**9
+      # if no path, vote exit now
+      if not self.path:
+        self.vote_exit = True
+      # report rrt info as metrics
+      self.metrics['init_time_s'] = init_time_s
+      path_points = []
+      for thing in self.path:
+        path_points.append(thing.position.get_pos())
+      self.metrics['path_points'] = path_points
+      # no longer in first update
+      self.first_update = False
+    
+    # navigate path in ea. update
+    if self.vote_exit:
+      # no path; do nothing
+      return
+    # TODO: implement path following
     # ea. update, advance position:
-        # move with provided velocity (max vel) along ea. segment
-        # if will overshoot next node, set position to node and rotate
+        # if will overshoot next node (use flow):
+            # set position to node and rotate (might be able to just set pos)
+            # increment step
+        # otherwise:
+            # call superclass flow
+            # don't increment step
         # continue until at goal
     # once at goal:
         # vote exit
-    pass
 
-  def build_rrt_tree(self, others, bounds, max_iterations, step_length):
+  # creates RRT tree; returns path to goal
+  def build_rrt_tree(self, others):
     # intitialize tree to store configurations
     # list of tuples: (Transform, ParentIndex)
     start = Thing(radius=self.radius)
     start.position = self.position
     start.velocity = self.velocity
     tree = [(start, -1)]
-    for i in range(max_iterations):
+    for i in range(self.max_iterations):
         # generate random free configuration
         # TODO: if runtimes are bad, sample goal occasionally (with eps)
-        q_rand = RandomThing(minTrans=bounds[0], maxTrans=bounds[1], radius=self.radius)
+        q_rand = RandomThing(minTrans=self.bounds[0], maxTrans=self.bounds[1], radius=self.radius)
         for other in others:
-          if other.name != 'goal' and q_rand.is_colliding(other):
+          if other.name != self.goal.name and q_rand.is_colliding(other):
             # skip any colliding configurations
             continue
         # traverse tree; find closest configuration (by position)
@@ -66,21 +89,18 @@ class RRTThing(RandomThing):
         disp = q_new.position.displacement_to(q_rand)
         disp.set_pos(np.zeros(3)) #toss displacement; we're using our own
         q_new.position = q_new.position.displace(disp) # rotate towards q_rand
-        q_new.position = q_new.position.displace(step_length*Transform.FORWARD)
+        q_new.position = q_new.position.displace(self.step_length*Transform.FORWARD)
         # ensure new position isn't in collision
         # this ignores points along the path; I'm kinda assuming step length is
         # smaller than the radius, so that shouldn't matter
         # also: getting goal now, for comparison later
-        goal = None
         for other in others:
-            if other.name == 'goal':
-              goal = other
-            elif q_new.is_colliding(other):
+            if other.name != self.goal.name and q_new.is_colliding(other):
               continue
         # add new node to tree
         tree.append((q_new, near_idx))
         # if new node is goal, done building tree
-        if q_new.is_colliding(goal):
+        if q_new.is_colliding(self.goal):
           # construct path by traversing from goal -> start on tree (then reverse)
           path = [tree[-1][0]]
           next_idx = tree[-1][1] #start at end of list
@@ -91,9 +111,10 @@ class RRTThing(RandomThing):
           # place dummy Things along path for sequential planners
           # this might fuck with Thing iteration in simulate.py; check that out
           for thing in path:
-            others.append(Thing)
+            others.append(thing)
           return path
 
+  # TODO: implement from_dict for configuration init.
   @staticmethod
   def from_dict(properties):
     pass
