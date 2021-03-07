@@ -77,7 +77,7 @@ class RRTThing(RandomThing):
     start.position = self.position
     start.velocity = self.velocity
     tree = [(start, -1)]
-    for i in range(self.max_iterations):
+    for _ in range(self.max_iterations):
         # generate random free configuration
         # TODO: if runtimes are bad, sample goal occasionally (with eps)
         q_rand = RandomThing(minTrans=self.bounds[0], maxTrans=self.bounds[1], radius=self.radius)
