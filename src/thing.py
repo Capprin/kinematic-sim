@@ -43,7 +43,7 @@ class Thing(object):
   # return an instance of myself from a dictionary
   # subclass for more specific behavior
   @staticmethod
-  def from_dict(properties):
+  def from_dict(properties, previous_things=None):
     if properties is None:
       return Thing()
     trans = properties['trans'] if 'trans' in properties else [0]*6

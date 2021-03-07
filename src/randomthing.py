@@ -16,7 +16,7 @@ class RandomThing(Thing):
     self.metrics['init'] = trans.tolist() #make sure yaml-readable
 
   @staticmethod
-  def from_dict(properties):
+  def from_dict(properties, thing_list=None):
     if properties is None:
       return RandomThing()
     minTrans = properties['min'] if 'min' in properties else [0]*3

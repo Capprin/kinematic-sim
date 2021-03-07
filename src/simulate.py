@@ -79,7 +79,7 @@ def read_things(yaml_in):
     # identify thing based on name
     for thing_class in THINGS:
       if thing_class.NAME in conf_name:
-        inst = thing_class.from_dict(conf_properties)
+        inst = thing_class.from_dict(conf_properties, thing_list)
         inst.name = conf_name
         thing_list.append(inst)
   return thing_list
