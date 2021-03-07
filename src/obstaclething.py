@@ -13,7 +13,7 @@ class ObstacleThing(RandomThing):
     self.vote_exit = True
 
   @staticmethod
-  def from_dict(properties):
+  def from_dict(properties, previous_things=None):
     # abuse python's weak typing
     obs = RandomThing.from_dict(properties)
     obs.NAME = ObstacleThing.NAME
