@@ -11,7 +11,7 @@ class RRTThing(RandomThing):
 
   NAME = 'rrt'
 
-  def __init__(self, goal, minTrans=[0]*3, maxTrans=[10, 10, 0], 
+  def __init__(self, goal, minTrans=[0]*3, maxTrans=[10, 10, 0],
                vel=Transform.FORWARD, radius=0.25, max_iterations=100):
     # do standard initialization
     super().__init__(minTrans, maxTrans, vel, radius)
@@ -32,12 +32,14 @@ class RRTThing(RandomThing):
       # if no path, vote exit now
       if not self.path:
         self.vote_exit = True
+      
       # report rrt info as metrics
       self.metrics['init_time_s'] = init_time_s
       path_points = []
       for thing in self.path:
         path_points.append(thing.position.get_pos())
       self.metrics['path_points'] = path_points
+      self.metrics['found_goal'] = False
       # no longer in first update
       self.first_update = False
     
@@ -45,17 +47,27 @@ class RRTThing(RandomThing):
     if self.vote_exit:
       # no path; do nothing
       return
-    # TODO: implement path following
-    # ea. update, advance position:
-        # if will overshoot next node (use flow):
-            # set position to node and rotate (might be able to just set pos)
-            # increment step
-        # otherwise:
-            # call superclass flow
-            # don't increment step
-        # continue until at goal
-    # once at goal:
-        # vote exit
+    # check for goal collision
+    if self.is_colliding(self.goal):
+      self.metrics['found_goal'] = True
+      self.vote_exit = True
+      return #no longer need to move
+    # estimate if we'll overshoot node
+    abs_vel = np.linalg.norm(self.velocity.get_pos())
+    remaining_dist = np.linalg.norm(self.position.get_pos() - 
+                                    self.path[self.step+1].position.get_pos())
+    # use time to estimate overshoot; Transform.flow() could be better
+    if remaining_dist/abs_vel < delta:
+      # we'll probably overshoot next node; update step
+      self.step += 1
+      # set position to next node
+      rot_to = self.path[self.step].position.displacement_to(self.path[self.step+1].position)
+      rot_to.set_pos(np.zeros(3)) #only want rotation to next node
+      self.position = self.path[self.step].position #update position
+      self.position.displace(rot_to) #rotate towards next next node
+    else:
+      # probably won't overshoot, so just integrate velocity
+      super().update(delta, others)
 
   # creates RRT tree; returns path to goal
   def build_rrt_tree(self, others):
@@ -114,7 +126,26 @@ class RRTThing(RandomThing):
             others.append(thing)
           return path
 
-  # TODO: implement from_dict for configuration init.
   @staticmethod
   def from_dict(properties, previous_things):
-    pass
+    if properties is None or previous_things is None:
+      raise Exception('rrtthing: properties and previous_things must be supplied')
+    # text properties
+    minTrans = properties['min'] if 'min' in properties else [0]*3
+    maxTrans = properties['max'] if 'max' in properties else [10, 10, 0]
+    vel = properties['vel'] if 'vel' in properties else Transform.FORWARD
+    radius = properties['radius'] if 'radius' in properties else 0.25
+    max_iterations = properties['max_iterations'] if 'max_iterations' in properties else 100
+    # goal init
+    goal_name = None
+    if 'goal' in properties:
+      goal_name = properties['goal']
+    else:
+      raise Exception('rrtthing: goal must be provided in properties')
+    goal = None
+    for thing in previous_things:
+      if thing.name == goal_name:
+        goal = thing
+    if goal is None:
+      raise Exception('rrtthing: goal name has no corresponding Thing')
+    return RRTThing(goal, minTrans, maxTrans, vel, radius, max_iterations)
