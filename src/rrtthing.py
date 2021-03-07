@@ -116,5 +116,5 @@ class RRTThing(RandomThing):
 
   # TODO: implement from_dict for configuration init.
   @staticmethod
-  def from_dict(properties):
+  def from_dict(properties, previous_things):
     pass
