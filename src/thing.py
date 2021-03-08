@@ -34,7 +34,6 @@ class Thing(object):
   # this should be extended!
   def update(self, delta, others):
     self.position.displace(self.velocity.flow(delta))
-    self.metrics['position'] = self.position.get_pos().tolist()
 
   # test for collision
   def is_colliding(self, other):

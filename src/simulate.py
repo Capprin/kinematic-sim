@@ -15,10 +15,11 @@ import yaml
 # things
 from thing import Thing
 from randomthing import RandomThing
+from rrtthing import RRTThing
 from obstaclething import ObstacleThing
 
 # keep track of all types of things here
-THINGS = [Thing, RandomThing, ObstacleThing]
+THINGS = [Thing, RandomThing, ObstacleThing, RRTThing]
 
 # run a simulation
 def simulate(things, max_time_s, speed=1.0, animate=True):
@@ -39,16 +40,26 @@ def simulate(things, max_time_s, speed=1.0, animate=True):
   while elapsed_s < max_time_s and not done:
     exit_vote = 0
     # update each thing
-    for i,thing in enumerate(things):
+    num_things = len(things)
+    i = 0
+    while i < num_things:
+      thing = things[i]
       # pass time since last update for each
       delta = speed*(time_ns() - start_ns - elapsed_ns[i])*10**(-9)
       thing.update(delta, things)
       elapsed_ns[i] = time_ns() - start_ns
       # check for exit
       if thing.force_exit:
+        print('\nReceived force exit from ' + thing.name)
         done = True
         break
       exit_vote += int(thing.vote_exit)
+      # update loop vars, in case more things were added
+      # this is generally bad practice; done in case Things append to list
+      if len(things) > num_things:
+        elapsed_ns.extend([time_ns()-start_ns] * (len(things)-num_things))
+        num_things = len(things)
+      i += 1
     # draw updates
     if animate:
       anim.update(axes, things)
