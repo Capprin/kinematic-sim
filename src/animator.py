@@ -4,6 +4,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+COLORS = {'thing':'lightskyblue', 'random':'lightskyblue', 'obstacle':'black', 'rrt':'crimson'}
+
 # create figure for updates
 def init():
   fig = plt.figure()
@@ -24,6 +26,7 @@ def update(ax, things):
   y = [0]*len(things)
   z = [0]*len(things)
   s = [0]*len(things)
+  c = ['black']*len(things)
   for i, thing in enumerate(things):
     pos_vec = thing.position.get_pos()
     # should be looped, but not verbose
@@ -31,7 +34,9 @@ def update(ax, things):
     y[i] = pos_vec[1]
     z[i] = pos_vec[2]
     s[i] = np.pi * (10*thing.radius) ** 2
-  ax.scatter(x, y, z, s=s, c='blue')
+    if thing.NAME in COLORS:
+      c[i] = COLORS[thing.NAME]
+  ax.scatter(x, y, z, s=s, c=c)
   plt.draw()
   plt.pause(0.01)
 

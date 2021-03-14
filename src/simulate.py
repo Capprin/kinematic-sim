@@ -27,12 +27,12 @@ def simulate(things, max_time_s, speed=1.0, animate=True):
   print('Performing any required initialization...')
   i = 0
   num_things = len(things)
+  done = False
   init_progress = tqdm('Initialization Progress', total=num_things, miniters=0, mininterval=1)
   while i < num_things:
     things[i].on_start(things)
     # check for force exit now
     if things[i].force_exit:
-      print('\nReceived force exit from ' + things[i].name)
       done = True
       break
     # handle length changes
@@ -45,7 +45,7 @@ def simulate(things, max_time_s, speed=1.0, animate=True):
   print('Done.')
 
   # set up animation, draw initial state
-  if animate:
+  if animate and not done:
     axes = anim.init()
     anim.update(axes, things)
 
@@ -56,7 +56,6 @@ def simulate(things, max_time_s, speed=1.0, animate=True):
   elapsed_ns = [0]*len(things) #ea. thing gets its own delta
 
   # simulator loop
-  done = False
   progress = tqdm(desc='Simulation Progress', total=max_time_s)
   while elapsed_s < max_time_s and not done:
     exit_vote = 0
@@ -83,7 +82,7 @@ def simulate(things, max_time_s, speed=1.0, animate=True):
       i += 1
     # draw updates
     if animate:
-      anim.update(axes, things)
+      anim.update(axes, list(reversed(things)))
     progress.update(speed*(time()-elapsed_s))
     elapsed_s = speed*(time() - start_s)
     if exit_vote >= len(things):
