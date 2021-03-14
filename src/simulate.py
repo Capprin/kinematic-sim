@@ -23,6 +23,27 @@ THINGS = [Thing, RandomThing, ObstacleThing, RRTThing]
 
 # run a simulation
 def simulate(things, max_time_s, speed=1.0, animate=True):
+  # run on_start, so Things can do any req. initialization
+  print('Performing any required initialization...')
+  i = 0
+  num_things = len(things)
+  init_progress = tqdm('Initialization Progress', total=num_things, miniters=0, mininterval=1)
+  while i < num_things:
+    things[i].on_start(things)
+    # check for force exit now
+    if things[i].force_exit:
+      print('\nReceived force exit from ' + things[i].name)
+      done = True
+      break
+    # handle length changes
+    if len(things) > num_things:
+      num_things = len(things)
+      init_progress.total = num_things
+    i += 1
+    init_progress.update(i)
+  init_progress.close()
+  print('Done.')
+
   # set up animation, draw initial state
   if animate:
     axes = anim.init()
@@ -105,7 +126,7 @@ if __name__=="__main__":
   args = parser.parse_args()
   with open(args.config,'r') as yf:
     things = read_things(yf)
-  print('Running simulation...')
+  print('Starting simulation')
   res = simulate(things, args.time, args.speed, args.animate)
   print('Done.')
   if args.output is not None:

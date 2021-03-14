@@ -23,30 +23,25 @@ class RRTThing(RandomThing):
     self.bounds = ([0, 0, 0], [1000, 1000, 0]) #TODO: don't hardcode this
     self.max_iterations = max_iterations
     self.step = 0
-    self.first_update = True
 
-  def update(self, delta, others):
-    # build RRT tree on first iteration; save path and metrics
-    if self.first_update:
-      start_ns = time_ns()
-      self.path = self.build_rrt_tree(others)
-      init_time_s = (time_ns() - start_ns)/(10**9)
-      # if no path, vote exit now
-      if not self.path:
-        self.force_exit = True
-      
-      # report rrt info as metrics
-      self.metrics['init_time_s'] = init_time_s
-      if self.path:
-        path_length = self.step_length*(len(self.path)-1)
-        self.metrics['path_length'] = path_length
-      self.metrics['found_goal'] = False
-      # no longer in first update
-      self.first_update = False
-
-      # done for first iteration
-      return
+  # create rrt tree offline
+  def on_start(self, others):
+    start_ns = time_ns()
+    self.path = self.build_rrt_tree(others)
+    init_time_s = (time_ns() - start_ns)/(10**9)
+    # if no path, force exit now
+    if not self.path:
+      self.force_exit = True
     
+    # report rrt info as metrics
+    self.metrics['init_time_s'] = init_time_s
+    if self.path:
+      path_length = self.step_length*(len(self.path)-1)
+      self.metrics['path_length'] = path_length
+    self.metrics['found_goal'] = False
+
+  # navigate generated path
+  def update(self, delta, others):
     # check for goal collision
     if self.is_colliding(self.goal):
       self.metrics['found_goal'] = True
