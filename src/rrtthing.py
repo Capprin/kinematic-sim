@@ -14,13 +14,14 @@ class RRTThing(RandomThing):
   EPS = 0.5
 
   def __init__(self, goal, minTrans=[0]*3, maxTrans=[10, 10, 0],
-               vel=Transform.FORWARD, radius=0.25, max_iterations=100):
+               searchMin=[0]*3, searchMax=[10,10,0], vel=Transform.FORWARD,
+               radius=0.25, max_iterations=100):
     # do standard initialization
     super().__init__(minTrans, maxTrans, vel, radius)
     # save relevant RRT data
     self.goal = goal
     self.step_length = radius
-    self.bounds = ([0, 0, 0], [1000, 1000, 0]) #TODO: don't hardcode this
+    self.bounds = (searchMin, searchMax)
     self.max_iterations = max_iterations
     self.step = 0
 
@@ -126,6 +127,8 @@ class RRTThing(RandomThing):
     # text properties
     minTrans = properties['min'] if 'min' in properties else [0]*3
     maxTrans = properties['max'] if 'max' in properties else [10, 10, 0]
+    searchMin = properties['search_min'] if 'search_min' in properties else [0]*3
+    searchMax = properties['search_max'] if 'search_max' in properties else [10, 10, 0]
     vel = properties['vel'] if 'vel' in properties else Transform.FORWARD
     radius = properties['radius'] if 'radius' in properties else 0.25
     max_iterations = properties['max_iterations'] if 'max_iterations' in properties else 100
@@ -141,4 +144,4 @@ class RRTThing(RandomThing):
         goal = thing
     if goal is None:
       raise Exception('rrtthing: goal name has no corresponding Thing')
-    return RRTThing(goal, minTrans, maxTrans, vel, radius, max_iterations)
+    return RRTThing(goal, minTrans, maxTrans, searchMin, searchMax, vel, radius, max_iterations)
