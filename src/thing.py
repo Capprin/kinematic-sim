@@ -30,6 +30,10 @@ class Thing(object):
     # metrics; add to this for output
     self.metrics = dict()
 
+  # initialization including others
+  def on_start(self, others):
+    return
+
   # update myself in the world. all other things are passed, for convenience
   # this should be extended!
   def update(self, delta, others):

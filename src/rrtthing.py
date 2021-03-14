@@ -14,39 +14,35 @@ class RRTThing(RandomThing):
   EPS = 0.5
 
   def __init__(self, goal, minTrans=[0]*3, maxTrans=[10, 10, 0],
-               vel=Transform.FORWARD, radius=0.25, max_iterations=100):
+               searchMin=[0]*3, searchMax=[10,10,0], vel=Transform.FORWARD,
+               radius=0.25, max_iterations=100):
     # do standard initialization
     super().__init__(minTrans, maxTrans, vel, radius)
     # save relevant RRT data
     self.goal = goal
     self.step_length = radius
-    self.bounds = ([0, 0, 0], [1000, 1000, 0]) #TODO: don't hardcode this
+    self.bounds = (searchMin, searchMax)
     self.max_iterations = max_iterations
     self.step = 0
-    self.first_update = True
 
-  def update(self, delta, others):
-    # build RRT tree on first iteration; save path and metrics
-    if self.first_update:
-      start_ns = time_ns()
-      self.path = self.build_rrt_tree(others)
-      init_time_s = (time_ns() - start_ns)/(10**9)
-      # if no path, vote exit now
-      if not self.path:
-        self.force_exit = True
-      
-      # report rrt info as metrics
-      self.metrics['init_time_s'] = init_time_s
-      if self.path:
-        path_length = self.step_length*(len(self.path)-1)
-        self.metrics['path_length'] = path_length
-      self.metrics['found_goal'] = False
-      # no longer in first update
-      self.first_update = False
-
-      # done for first iteration
-      return
+  # create rrt tree offline
+  def on_start(self, others):
+    start_ns = time_ns()
+    self.path = self.build_rrt_tree(others)
+    init_time_s = (time_ns() - start_ns)/(10**9)
+    # if no path, force exit now
+    if not self.path:
+      self.force_exit = True
     
+    # report rrt info as metrics
+    self.metrics['init_time_s'] = init_time_s
+    if self.path:
+      path_length = self.step_length*(len(self.path)-1)
+      self.metrics['path_length'] = path_length
+    self.metrics['found_goal'] = False
+
+  # navigate generated path
+  def update(self, delta, others):
     # check for goal collision
     if self.is_colliding(self.goal):
       self.metrics['found_goal'] = True
@@ -131,6 +127,8 @@ class RRTThing(RandomThing):
     # text properties
     minTrans = properties['min'] if 'min' in properties else [0]*3
     maxTrans = properties['max'] if 'max' in properties else [10, 10, 0]
+    searchMin = properties['search_min'] if 'search_min' in properties else [0]*3
+    searchMax = properties['search_max'] if 'search_max' in properties else [10, 10, 0]
     vel = properties['vel'] if 'vel' in properties else Transform.FORWARD
     radius = properties['radius'] if 'radius' in properties else 0.25
     max_iterations = properties['max_iterations'] if 'max_iterations' in properties else 100
@@ -146,4 +144,4 @@ class RRTThing(RandomThing):
         goal = thing
     if goal is None:
       raise Exception('rrtthing: goal name has no corresponding Thing')
-    return RRTThing(goal, minTrans, maxTrans, vel, radius, max_iterations)
+    return RRTThing(goal, minTrans, maxTrans, searchMin, searchMax, vel, radius, max_iterations)
