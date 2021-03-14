@@ -12,6 +12,7 @@ class RRTThing(RandomThing):
 
   NAME = 'rrt'
   EPS = 0.5
+  STEP_LENGTH = 0.5
 
   def __init__(self, goal, minTrans=[0]*3, maxTrans=[10, 10, 0],
                searchMin=[0]*3, searchMax=[10,10,0], vel=Transform.FORWARD,
@@ -20,7 +21,6 @@ class RRTThing(RandomThing):
     super().__init__(minTrans, maxTrans, vel, radius)
     # save relevant RRT data
     self.goal = goal
-    self.step_length = radius
     self.bounds = (searchMin, searchMax)
     self.max_iterations = max_iterations
     self.step = 0
@@ -37,7 +37,7 @@ class RRTThing(RandomThing):
     # report rrt info as metrics
     self.metrics['init_time_s'] = init_time_s
     if self.path:
-      path_length = self.step_length*(len(self.path)-1)
+      path_length = RRTThing.STEP_LENGTH*(len(self.path)-1)
       self.metrics['path_length'] = path_length
     self.metrics['found_goal'] = False
 
@@ -94,16 +94,17 @@ class RRTThing(RandomThing):
           nearest_dist = dist
       # create new node
       # traverse by step_length from q_near along line towards q_rand
-      q_new = deepcopy(q_near)
-      disp = q_new.position.displacement_to(q_rand.position)
-      disp.set_pos(self.step_length*disp.get_pos()/np.linalg.norm(disp.get_pos()))
-      q_new.position.displace(disp) # step towards q_rand
-      # ensure new position isn't in collision
-      # this ignores points along the path; I'm kinda assuming step length is
-      # smaller than the radius, so that shouldn't matter
-      for other in others:
-          if other.name != self.goal.name and q_new.is_colliding(other):
+      q_tmp = deepcopy(q_near)
+      disp_full = q_tmp.position.displacement_to(q_rand.position)
+      disp_radius = Transform(pos=self.radius*disp_full.get_pos()/np.linalg.norm(disp_full.get_pos()))
+      # ensure ea. location along path isn't in collision
+      for _ in np.arange(0, RRTThing.STEP_LENGTH, self.radius):
+        q_tmp.position.displace(disp_radius)
+        for other in others:
+          if other.name != self.goal.name and q_tmp.is_colliding(other):
             continue
+      # add new configuration
+      q_new = deepcopy(q_tmp)
       # add new node to tree
       tree.append((q_new, near_idx))
       # if new node is goal, done building tree
@@ -116,8 +117,16 @@ class RRTThing(RandomThing):
           next_idx = tree[next_idx][1]
         path.reverse()
         # place dummy Things along path for sequential planners
-        for thing in path:
-          others.append(thing)
+        for i in range(len(path)-1):
+          disp_full = path[i].position.displacement_to(path[i+1].position)
+          disp_radius = Transform(pos=self.radius*disp_full.get_pos()/np.linalg.norm(disp_full.get_pos()))
+          q_tmp = deepcopy(path[i].position)
+          for _ in np.arange(0, RRTThing.STEP_LENGTH, self.radius):
+            q_tmp.displace(disp_radius)
+            new_thing = Thing()
+            new_thing.vote_exit = True
+            new_thing.position = deepcopy(q_tmp)
+            others.append(new_thing)
         return path
 
   @staticmethod
