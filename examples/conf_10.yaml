@@ -1,0 +1,101 @@
+goal_random_0:
+  min: [800, 0, 0]
+  max: [1000, 1000, 0]
+  radius: 0.5
+goal_random_1:
+  min: [800, 0, 0]
+  max: [1000, 1000, 0]
+  radius: 0.5
+goal_random_2:
+  min: [800, 0, 0]
+  max: [1000, 1000, 0]
+  radius: 0.5
+goal_random_3:
+  min: [800, 0, 0]
+  max: [1000, 1000, 0]
+  radius: 0.5
+goal_random_4:
+  min: [800, 0, 0]
+  max: [1000, 1000, 0]
+  radius: 0.5
+rrt_0:
+  min: [0, 0, 0]
+  max: [100, 100, 0]
+  search_min: [0, 0, 0]
+  search_max: [1000, 1000, 0]
+  goal: goal_random_0
+  vel: [5, 0, 0, 0, 0, 0]
+  radius: 0.5
+  max_iterations: 5000
+rrt_1:
+  min: [0, 0, 0]
+  max: [100, 100, 0]
+  search_min: [0, 0, 0]
+  search_max: [1000, 1000, 0]
+  goal: goal_random_1
+  vel: [5, 0, 0, 0, 0, 0]
+  radius: 0.5
+  max_iterations: 5000
+rrt_2:
+  min: [0, 0, 0]
+  max: [100, 100, 0]
+  search_min: [0, 0, 0]
+  search_max: [1000, 1000, 0]
+  goal: goal_random_2
+  vel: [5, 0, 0, 0, 0, 0]
+  radius: 0.5
+  max_iterations: 5000
+rrt_3:
+  min: [0, 0, 0]
+  max: [100, 100, 0]
+  search_min: [0, 0, 0]
+  search_max: [1000, 1000, 0]
+  goal: goal_random_3
+  vel: [5, 0, 0, 0, 0, 0]
+  radius: 0.5
+  max_iterations: 5000
+rrt_4:
+  min: [0, 0, 0]
+  max: [100, 100, 0]
+  search_min: [0, 0, 0]
+  search_max: [1000, 1000, 0]
+  goal: goal_random_4
+  vel: [5, 0, 0, 0, 0, 0]
+  radius: 0.5
+  max_iterations: 5000
+obstacle_0:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_1:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_2:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_3:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_4:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_5:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_6:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_7:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_8:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_9:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_10:
+  max: [1000, 1000, 0]
+  radius: 50
+obstacle_11:
+  max: [1000, 1000, 0]
+  radius: 50
